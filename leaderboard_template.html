@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>E-Kicker Leaderboard</title>
+    <style>
+        body { font-family: Arial; text-align: center; }
+        table { margin: auto; border-collapse: collapse; width: 70%; }
+        th, td { padding: 8px; border: 1px solid #ccc; }
+        th { background-color: #eee; }
+        img { width: 50px; height: 50px; border-radius: 50%; }
+    </style>
+</head>
+<body>
+    <h1>E-Kicker Public Leaderboard</h1>
+    <table>
+        <tr>
+            <th>Rank</th><th>Profile</th><th>Name</th><th>Attacker ELO</th><th>Defender ELO</th><th>Total ELO</th>
+        </tr>
+        {% for p in players %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td><img src="static/profile_pictures/{{ p[3] }}" alt="{{ p[0] }}"></td>
+            <td>{{ p[0] }}</td>
+            <td>{{ p[1] }}</td>
+            <td>{{ p[2] }}</td>
+            <td>{{ p[4] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
