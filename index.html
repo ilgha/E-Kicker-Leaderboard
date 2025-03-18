@@ -6,11 +6,14 @@
     <title>E-Kicker Leaderboard</title>
     <!-- Bootstrap CSS (dark theme friendly) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/Sw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         body {
             background: linear-gradient(135deg, #1a1a2e, #121212);
             color: #fff;
             padding-top: 30px;
+            min-height: 100svh;
         }
 
         .leaderboard-img {
@@ -40,15 +43,19 @@
 <body class="bg-dark text-light">
     <div class="container py-4">
         <h1 class="text-center mb-3 text-warning">🏆 E-Kicker Leaderboard 🏆</h1>
-        <p class="text-center last-updated text-light-emphasis small">Last updated: 2025-03-18 17:12:48</p>
+        <p class="text-center last-updated text-light-emphasis small">
+            Last updated: 2025-03-18 17:18:31
+            <br>
+            Play at the <a class="text-warning" href="https://bepolytech.be/wp-content/uploads/acceder_local_bep_fondcouleur-1024x721-1.png" target="_blank"><strong>BEP</strong> (<i>S.UB1.149</i>)</a> !
+        </p>
 
         <!-- Twitch and Join buttons -->
-        <div class="mb-4">
-            <a href="https://www.twitch.tv/bepolytech" class="btn btn-outline-warning mx-1" target="_blank">
-                🎬 Watch on Twitch
+        <div class="mb-2">
+            <a href="https://www.twitch.tv/bepolytech" class="btn btn-outline-warning mx-1 mb-2" target="_blank">
+                <i class="fa fa-twitch" style="color: #6441a5; margin-right: 2px;" aria-hidden="true"></i> Watch live on Twitch
             </a>
-            <a href="https://forms.gle/qEN6ueE3zCKA4Hc87" class="btn btn-outline-light mx-1" target="_blank">
-                ➕ Join the Leaderboard
+            <a href="https://forms.gle/qEN6ueE3zCKA4Hc87" class="btn btn-outline-light mx-1 mb-2" target="_blank">
+                <i class="fa fa-plus text-warning"  style="margin-right: 2px;" aria-hidden="true"></i> Join the Leaderboard
             </a>
         </div>
 
