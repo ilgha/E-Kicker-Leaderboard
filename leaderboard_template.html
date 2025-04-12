@@ -70,7 +70,7 @@
         <div class="table-responsive shadow-lg">
             <table class="table table-dark table-striped table-hover">
                 <thead>
-                    <tr>
+                    <tr class="align-middle">
                         <th>Rank</th>
                         <th>Player</th>
                         <th>Profile</th>
@@ -81,7 +81,7 @@
                 </thead>
                 <tbody>
                     {% for player in players %}
-                    <tr>
+                    <tr class="align-middle">
                         <td>{{ loop.index }}</td>
                         <td class="fw-bold">{{ player[0] }}</td>
                         <td>
