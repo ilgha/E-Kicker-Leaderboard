@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Kicker by BEP</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+        h1 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .form-section {
+            margin-top: 20px;
+        }
+        input, select, button {
+            padding: 10px;
+            margin: 5px;
+            width: calc(100%);
+        }
+        .action-buttons {
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+            align-items: center;
+        }
+        .action-buttons input[type="text"] {
+            width: 80px;
+            padding: 4px;
+            font-size: 0.9em;
+        }
+        .action-buttons button {
+            padding: 4px 6px;
+            font-size: 0.9em;
+        }
+        img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover; /* Ensures the image fits within the box without distortion */
+            border-radius: 50%; /* Makes the image circular */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>E-Kicker by BEP</h1>
+
+        <!-- Display Current Players -->
+        <div class="form-section">
+            <h2>Current Players</h2>
+            <div>
+                <h3>Team RED</h3>
+                <p>Attacker: {{ current_players['team1_attacker'][0] }} - ELO: {{ current_players['team1_attacker'][1] }}</p>
+                <p>Defender: {{ current_players['team1_defender'][0] }} - ELO: {{ current_players['team1_defender'][1] }}</p>
+            </div>
+            <div>
+                <h3>Team BLUE</h3>
+                <p>Attacker: {{ current_players['team2_attacker'][0] }} - ELO: {{ current_players['team2_attacker'][1] }}</p>
+                <p>Defender: {{ current_players['team2_defender'][0] }} - ELO: {{ current_players['team2_defender'][1] }}</p>
+            </div>
+
+            <!-- Reset Current Players Button -->
+            <form action="/reset_current_players" method="post" style="margin-top: 20px;">
+                <button type="submit">Reset Current Players</button>
+            </form>
+        </div>
+
+        <!-- Score Management Section -->
+        <div class="form-section">
+            <h2>Set Current Score</h2>
+            <form action="/set_score" method="post">
+                <label for="team1_score">Team RED Score:</label>
+                <input type="number" id="team1_score" name="team1_score" value="{{ current_score['team1'] }}" required>
+                <br>
+                <label for="team2_score">Team BLUE Score:</label>
+                <input type="number" id="team2_score" name="team2_score" value="{{ current_score['team2'] }}" required>
+                <br>
+                <button type="submit">Update Score</button>
+            </form>
+        </div>
+
+        <!-- Select Current Players for OBS -->
+        <div class="form-section">
+            <h2>Select Current Players for OBS</h2>
+            <form action="/set_current_players" method="post">
+                <h3>Team RED</h3>
+                <label>Attacker:</label>
+                <select name="team1_attacker" required>
+                    {% for player in players %}
+                    <option value="{{ player[0] }}">{{ player[1] }}</option>
+                    {% endfor %}
+                </select>
+
+                <label>Defender:</label>
+                <select name="team1_defender" required>
+                    {% for player in players %}
+                    <option value="{{ player[0] }}">{{ player[1] }}</option>
+                    {% endfor %}
+                </select>
+
+                <h3>Team BLUE</h3>
+                <label>Attacker:</label>
+                <select name="team2_attacker" required>
+                    {% for player in players %}
+                    <option value="{{ player[0] }}">{{ player[1] }}</option>
+                    {% endfor %}
+                </select>
+
+                <label>Defender:</label>
+                <select name="team2_defender" required>
+                    {% for player in players %}
+                    <option value="{{ player[0] }}">{{ player[1] }}</option>
+                    {% endfor %}
+                </select>
+
+                <button type="submit">Set Current Players</button>
+            </form>
+        </div>
+
+        <!-- Record Match Form -->
+        <div class="form-section">
+            <h2>Record Match Result</h2>
+            <form action="/record_match" method="post">
+                <h3>Team RED</h3>
+                <p>Attacker: {{ current_players['team1_attacker'][0] }}</p>
+                <p>Defender: {{ current_players['team1_defender'][0] }}</p>
+
+                <h3>Team BLUE</h3>
+                <p>Attacker: {{ current_players['team2_attacker'][0] }}</p>
+                <p>Defender: {{ current_players['team2_defender'][0] }}</p>
+
+                <h3>Result</h3>
+                <select name="result" required>
+                    <option value="1">Team RED Wins</option>
+                    <option value="0">Team BLUE Wins</option>
+                    <option value="0.5">Draw</option>
+                </select>
+                <button type="submit">Record Match</button>
+            </form>
+        </div>
+
+        <!-- Add Player Form -->
+        <div class="form-section">
+            <h2>Add New Player</h2>
+            <form action="/add_player" method="post" enctype="multipart/form-data">
+                <input type="text" name="name" placeholder="Enter player name" required>
+                <input type="file" name="profile_picture" accept="image/*" required>
+                <button type="submit">Add Player</button>
+            </form>
+        </div>
+
+        <!-- Leaderboard Display -->
+        <div class="form-section">
+            <h2>Leaderboard</h2>
+            <table>
+                <tr>
+                    <th>Picture</th>
+                    <th>Player</th>
+                    <th>Attacker ELO</th>
+                    <th>Defender ELO</th>
+                    <th>Total ELO</th>
+                    <th>Actions</th>
+                </tr>
+                {% for player in players %}
+                <tr>
+                    <!-- Profile Picture -->
+                    <td>
+                        <img src="/static/profile_pictures/{{ player[5] }}" alt="Profile Picture">
+                    </td>
+                    <!-- Player Info -->
+                    <td>{{ player[1] }}</td>
+                    <td>{{ player[3] }}</td>
+                    <td>{{ player[4] }}</td>
+                    <td>{{ player[3] + player[4] }}</td>
+                    <!-- Actions -->
+                    <td class="action-buttons">
+                        <!-- Edit Player -->
+                        <form action="/edit_player/{{ player[0] }}" method="post" enctype="multipart/form-data">
+                            <input type="text" name="new_name" placeholder="New name" required>
+                            <input type="file" name="profile_picture" accept="image/*">
+                            <button type="submit">Edit</button>
+                        </form>
+                        <!-- Remove Player -->
+                        <form action="/remove_player" method="post">
+                            <input type="hidden" name="player_id" value="{{ player[0] }}">
+                            <button type="submit">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
