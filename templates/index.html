@@ -178,6 +178,8 @@
                     <th>Attacker ELO</th>
                     <th>Defender ELO</th>
                     <th>Total ELO</th>
+                    <th>Games</th>
+                    <th>Status</th>
                     <th>Actions</th>
                 </tr>
                 {% for player in players %}
@@ -191,6 +193,16 @@
                     <td>{{ player[3] }}</td>
                     <td>{{ player[4] }}</td>
                     <td>{{ player[3] + player[4] }}</td>
+                    <!-- Games Played -->
+                    <td>{{ player[6] }}/5</td>
+                    <!-- Placement Status -->
+                    <td>
+                        {% if player[6] < 5 %}
+                            <span style="background-color: #ff9800; padding: 5px 10px; border-radius: 5px; font-size: 0.9em;">Placement</span>
+                        {% else %}
+                            <span style="background-color: #4caf50; padding: 5px 10px; border-radius: 5px; font-size: 0.9em;">Active</span>
+                        {% endif %}
+                    </td>
                     <!-- Actions -->
                     <td class="action-buttons">
                         <!-- Edit Player -->

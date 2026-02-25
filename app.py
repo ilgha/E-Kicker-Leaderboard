@@ -9,6 +9,11 @@ DATABASE = 'ekicker.db'
 K = 32  # ELO adjustment factor
 OBS_DIRECTORY = 'obs_data'  # Directory to store text files for OBS
 
+# PLACEMENT SYSTEM: Players must play 5 games before appearing on public leaderboard
+# - ELO is updated from the first game
+# - Flask app shows all players with placement status
+# - Public GitHub leaderboard only shows players with 5+ games
+
 # Initialize a dictionary to store current players' data for the website display
 current_players_display = {}
 
@@ -68,8 +73,8 @@ def index():
     conn = connect_db()
     cursor = conn.cursor()
     # Select players ordered by the sum of elo_attacker and elo_defender in descending order
-    # Column order must match template expectations: id, name, total_elo, elo_attacker, elo_defender, profile_picture
-    cursor.execute("SELECT id, name, (elo_attacker + elo_defender), elo_attacker, elo_defender, profile_picture FROM players ORDER BY (elo_attacker + elo_defender) DESC")
+    # Column order: id, name, total_elo, elo_attacker, elo_defender, profile_picture, games_played
+    cursor.execute("SELECT id, name, (elo_attacker + elo_defender), elo_attacker, elo_defender, profile_picture, games_played FROM players ORDER BY (elo_attacker + elo_defender) DESC")
     players = cursor.fetchall()
     conn.close()
     return render_template('index.html', players=players, current_players=current_players_display, current_score=current_score)
@@ -150,11 +155,11 @@ def record_match():
         team2_attacker_new_elo = round(team2_attacker_elo + K * (team2_score - team2_expected_score))
         team2_defender_new_elo = round(team2_defender_elo + K * (team2_score - team2_expected_score))
 
-        # Update database with new ELOs
-        cursor.execute("UPDATE players SET elo_attacker = ? WHERE id = ?", (team1_attacker_new_elo, team1_attacker_id))
-        cursor.execute("UPDATE players SET elo_defender = ? WHERE id = ?", (team1_defender_new_elo, team1_defender_id))
-        cursor.execute("UPDATE players SET elo_attacker = ? WHERE id = ?", (team2_attacker_new_elo, team2_attacker_id))
-        cursor.execute("UPDATE players SET elo_defender = ? WHERE id = ?", (team2_defender_new_elo, team2_defender_id))
+        # Update database with new ELOs and increment games_played
+        cursor.execute("UPDATE players SET elo_attacker = ?, games_played = games_played + 1 WHERE id = ?", (team1_attacker_new_elo, team1_attacker_id))
+        cursor.execute("UPDATE players SET elo_defender = ?, games_played = games_played + 1 WHERE id = ?", (team1_defender_new_elo, team1_defender_id))
+        cursor.execute("UPDATE players SET elo_attacker = ?, games_played = games_played + 1 WHERE id = ?", (team2_attacker_new_elo, team2_attacker_id))
+        cursor.execute("UPDATE players SET elo_defender = ?, games_played = games_played + 1 WHERE id = ?", (team2_defender_new_elo, team2_defender_id))
         conn.commit()
         conn.close()
 

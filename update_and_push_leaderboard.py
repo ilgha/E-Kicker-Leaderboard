@@ -11,15 +11,47 @@ OUTPUT_HTML = 'index.html'
 PROFILE_SRC = 'static/profile_pictures'
 PROFILE_DST = 'static/profile_pictures'
 
+def get_placement_stats():
+    """Get statistics on player placement progress."""
+    try:
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        
+        cursor.execute("SELECT COUNT(*) FROM players")
+        total_players = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(*) FROM players WHERE games_played >= 5")
+        qualified_players = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(*) FROM players WHERE games_played > 0 AND games_played < 5")
+        in_placement = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(*) FROM players WHERE games_played = 0")
+        no_games = cursor.fetchone()[0]
+        
+        conn.close()
+        
+        return {
+            'total': total_players,
+            'qualified': qualified_players,
+            'in_placement': in_placement,
+            'no_games': no_games
+        }
+    except Exception as e:
+        print(f"Error reading database: {e}")
+        return None
+
 def get_players():
-    """Fetch all players from database, ordered by total ELO."""
+    """Fetch all players from database with 5+ games, ordered by total ELO."""
     try:
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
         cursor.execute("""
             SELECT name, elo_attacker, elo_defender, profile_picture,
-                   (elo_attacker + elo_defender) as total_elo
+                   (elo_attacker + elo_defender) as total_elo,
+                   games_played
             FROM players
+            WHERE games_played >= 5
             ORDER BY total_elo DESC
         """)
         players = cursor.fetchall()
@@ -100,13 +132,31 @@ if __name__ == "__main__":
     print(f"Updating leaderboard at: {updated_time}")
     print("=" * 60)
 
+    # Show placement stats
+    stats = get_placement_stats()
+    if stats:
+        print(f"\nPlacement System Status:")
+        print(f"  Total players:     {stats['total']}")
+        print(f"  Qualified (5+ games):  {stats['qualified']}")
+        print(f"  In placement:          {stats['in_placement']} (need more games)")
+        print(f"  Not started:           {stats['no_games']}")
+        print()
+
     # Get players from database
     players = get_players()
-    if not players:
-        print("Error: No players found in database")
-        exit(1)
     
-    print(f"✓ Found {len(players)} players")
+    if not players:
+        print("⚠️  No players with 5+ games found in database")
+        print("   (Players need to complete 5 placement games first)")
+        print()
+        print("✓ Attempting to push changes anyway...")
+        git_push(updated_time)
+        print("=" * 60)
+        print("Update complete! Public leaderboard ready when players reach 5 games.")
+        print("=" * 60)
+        exit(0)
+    
+    print(f"✓ Found {len(players)} qualified players (5+ games)")
 
     # Generate HTML
     generate_html(players, updated_time)
