@@ -149,6 +149,10 @@ if __name__ == "__main__":
         print("⚠️  No players with 5+ games found in database")
         print("   (Players need to complete 5 placement games first)")
         print()
+        # Render an empty leaderboard (shows friendly message) so public site updates
+        generate_html([], updated_time)
+        print("✓ Generated empty public leaderboard (no qualified players)")
+        print()
         print("✓ Attempting to push changes anyway...")
         git_push(updated_time)
         print("=" * 60)

@@ -68,6 +68,7 @@
         </div>
 
         <div class="table-responsive shadow-lg">
+            {% if players and players|length > 0 %}
             <table class="table table-dark table-striped table-hover">
                 <thead>
                     <tr class="align-middle">
@@ -94,6 +95,13 @@
                     {% endfor %}
                 </tbody>
             </table>
+            {% else %}
+            <div class="p-5 text-center text-muted">
+                <h3 class="mb-3">No qualified players yet</h3>
+                <p class="mb-0">No players have completed the required placement games (5 games). The public leaderboard will appear here once players finish placement.</p>
+                <p class="small mt-3">Last updated: {{ last_updated }}</p>
+            </div>
+            {% endif %}
         </div>
     </div>
 </body>
