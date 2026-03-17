@@ -3,6 +3,8 @@ from werkzeug.utils import secure_filename
 import sqlite3
 import os
 from PIL import Image
+import urllib.request
+from urllib.error import URLError, HTTPError
 
 app = Flask(__name__)
 DATABASE = 'ekicker.db'
@@ -166,6 +168,87 @@ def record_match():
         return redirect(url_for('index'))
     except Exception as e:
         return f'Error recording match: {str(e)}', 500
+
+
+def download_image_from_url(url, dest_path):
+    """Download an image from a URL to dest_path. Returns True on success."""
+    try:
+        # simple fetch; urlretrieve will follow redirects
+        urllib.request.urlretrieve(url, dest_path)
+        return True
+    except (URLError, HTTPError, Exception) as e:
+        print(f"Error downloading image from {url}: {e}")
+        return False
+
+
+@app.route('/api/register', methods=['POST'])
+def api_register():
+    """Register a new player via API.
+
+    Accepts multipart/form-data or JSON with fields:
+      - name (required)
+      - profile_picture (file, optional)
+      - profile_picture_url (optional) - server will try to download
+
+    Returns JSON {success: true, id: X} or error.
+    """
+    # Get name from form or JSON
+    name = request.form.get('name') or (request.json and request.json.get('name'))
+    if not name:
+        return jsonify({'error': 'name is required'}), 400
+
+    # Prevent duplicate names
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM players WHERE name = ?", (name,))
+    if cursor.fetchone():
+        conn.close()
+        return jsonify({'error': 'player with this name already exists'}), 409
+
+    # Determine profile picture
+    file = request.files.get('profile_picture')
+    profile_url = request.form.get('profile_picture_url') or (request.json and request.json.get('profile_picture_url'))
+
+    filename = secure_filename(f"{name}.png")
+    dest_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+    saved = False
+    # 1) If file uploaded
+    if file and file.filename and allowed_file(file.filename):
+        try:
+            file.save(dest_path)
+            saved = True
+        except Exception as e:
+            print(f"Error saving uploaded file: {e}")
+
+    # 2) Else if URL provided, try to download
+    if not saved and profile_url:
+        saved = download_image_from_url(profile_url, dest_path)
+
+    # 3) Fallback to default
+    if not saved:
+        # ensure default exists
+        default_picture = os.path.join(app.config['UPLOAD_FOLDER'], 'default.png')
+        if os.path.exists(default_picture):
+            filename = 'default.png'
+        else:
+            filename = 'default.png'  # still set, but file may be missing
+
+    # Insert player with default ELOs and games_played 0
+    try:
+        cursor.execute(
+            "INSERT INTO players (name, elo_attacker, elo_defender, profile_picture, games_played) VALUES (?, 1000, 1000, ?, 0)",
+            (name, filename)
+        )
+        conn.commit()
+        player_id = cursor.lastrowid
+    except Exception as e:
+        conn.rollback()
+        conn.close()
+        return jsonify({'error': f'database error: {e}'}), 500
+
+    conn.close()
+    return jsonify({'success': True, 'id': player_id}), 201
 
 
 @app.route('/remove_player', methods=['POST'])
